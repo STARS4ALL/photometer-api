@@ -3,8 +3,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-//const Tess = require('./models/Tess.js');
 
+
+//Import mongodb models
+var Tess = require('./models/tess.js').Tess;
+var Observations = require('./models/observation.js').Observations;
+var Report = require('./models/report.js').Report;
 
 const PORT = 8888;
 
@@ -18,30 +22,6 @@ mongoose.connect('mongodb://photometerdb/photometers', function(err,res) {
 	}
 });
 
-var Schema = mongoose.Schema;
-var TessSchema = new Schema({
-        id:String,
-        location:String,
-        owner:String
-});
-var Tess = mongoose.model('Photometer', TessSchema, 'photometers');
-
-var ObservationSchema = new Schema({
-	name:String,
-	seq:Number,
-	tamb:Number,
-	rev:Number,
-	tsky:Number,
-	mag:Number,
-	freq:Number
-});
-var Observations = mongoose.model('Observation',ObservationSchema,'observations');
-
-var ReportSchema = new Schema({
-	photometers: [String],
-	sensors: [String]
-});
-var Reports = mongoose.model('Report', ReportSchema,'reports');
 
 //App
 
@@ -98,11 +78,11 @@ router.post('/api/reports/new', function(req, res){
 	var photometers = req.body.photometers;
 	var sensors = req.body.sensors
 
-	var report = Reports(req.body);
+	var report = Report(req.body);
 	console.log("Report:"+report);
 	console.log(photometers+" "+sensors);
 
-	Reports.findOne({ $and: [{photometers:photometers},{sensors:sensors}] }, function(errs, docs){
+	Report.findOne({ $and: [{photometers:photometers},{sensors:sensors}] }, function(errs, docs){
 		if (errs){
 			res.json(500);
 		} else {
@@ -141,7 +121,7 @@ router.get('/api/reports/:id', function(req, res){
 	var link = req.protocol+"://"+req.hostname+"/api/reports/"+req.params.id;
 
 	//Looking for a report
-	Reports.findOne({_id:req.params.id}, function (errs, docs){
+	Report.findOne({_id:req.params.id}, function (errs, docs){
 		if (errs){
 			res.json(500);
 		} else {
@@ -171,4 +151,3 @@ app.use(router)
 app.listen(PORT);
 
 console.log("Running on server:"+PORT); 
-
