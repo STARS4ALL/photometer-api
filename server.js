@@ -89,7 +89,7 @@ router.get('/api/v1/photometers/:id_tess/observations', function(req, res){
 
 	var id_tess = req.params.id_tess;
 
-	var link = req.protocol+"://"+req.hostname+":"+PORT+"/api/v1/photometers/"+id_tess+"/observations/"; 
+//	var link = req.protocol+"://"+req.hostname+":"+PORT+"/api/v1/photometers/"+id_tess+"/observations/"; 
 
 	var query;
 
@@ -108,7 +108,7 @@ router.get('/api/v1/photometers/:id_tess/observations', function(req, res){
 	var aux = (cursor-count);
 	var before = ( aux < 0) ? 0 : aux;
 	var after =parseInt(cursor)+parseInt(count);
-	var link = req.protocol+"://"+req.hostname+":"+PORT+"/api/v1/photometers/"+id_tess+"/observations/";
+	var link = "http://api.stars4all.eu/api/v1/photometers/"+id_tess+"/observations/";
 
 
 /*	var time = req.query.tstamp;
