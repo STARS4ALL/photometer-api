@@ -2,12 +2,15 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var TessSchema = new Schema({
-        id:String,
+        name:String,
+	mac:String,
         location:String,
-        owner:String
+        tester:String,
+	latitude:Number,
+	longitude:Number
 });
 
-var Tess = mongoose.model('Photometer', TessSchema, 'photometers');
+var Tess = mongoose.model('Photometer', TessSchema,'tess');
 
 module.exports.Tess = Tess;
 module.exports.Schema = TessSchema;
