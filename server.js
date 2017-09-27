@@ -8,8 +8,10 @@ const bodyParser = require('body-parser');
 //Import mongodb models
 var Tess = require('./models/tess.js').Tess;
 var Observations = require('./models/observation.js').Observations;
+var Last = require('./models/observation.js').last_observations;
 var Report = require('./models/report.js').Report;
 var config = require('./config.js');
+var Crowd = require('./models/crowdstats.js').CrowdStats;
 
 const PORT = 8888;
 
@@ -42,18 +44,43 @@ router.get('/', function (req, res){
 	res.json({ message: 'Hello world\n' });
 });
 
-router.get('/api/v1/info', function (req, res){
+router.get('/info', function (req, res){
 	res.json({project:'STARS4ALL', description: 'This is a REST API to access to the photometers data', funded:' By European Union ( H2020 framework -> 688135)'});
 });
 
-router.get('/api/v1/photometers', function (req, res){
+router.get('/crowdsourcing', function (req, res){
+
+	var beginInterval = req.query.begin;
+	var endInterval = req.query.end;
+	var project = req.query.project;
+
+	var query;
+
+	if ((beginInterval!=null) && (endInterval!=null)){
+		query = {date: {$gt: beginInterval, $lt: endInterval}};
+	} else if ((beginInterval!=null) && (endInterval==null)){
+		query = {date: {$gt : beginInterval}};
+	} else{
+		query = {};
+	}
+
+	if (project!=null){
+		query["project"]=project;
+	}
+
+	Crowd.find(query, function (errs,docs){
+		res.json(docs);
+	});
+});
+
+router.get('/photometers', function (req, res){
 
 	Tess.find({}, function (errs,docs){
 		res.json(docs);
 	});
 });
 
-router.get('/api/v1/photometers/:id', function (req, res){
+router.get('/photometers/:id', function (req, res){
 
 	Tess.findOne({name:req.params.id}, function (errs, docs){
 	
@@ -66,9 +93,12 @@ router.get('/api/v1/photometers/:id', function (req, res){
 
 });
 
-router.get('/api/v1/photometers/:id_tess/observations/:id_obs', function(req, res){
+router.get('/photometers/:id_tess/observations/:id_obs', function(req, res){
 
 	
+	var id_tess = req.params.id_tess;
+
+	var query;
 
 	//Read fields
 	var fields = req.query.fields;
@@ -78,14 +108,53 @@ router.get('/api/v1/photometers/:id_tess/observations/:id_obs', function(req, re
 		fields = '';
 	}
 
-	Observations.findOne({ _id: req.params.id_obs}, fields,  function (errs, doc){
-		res.json(doc);
-	});
-	
+	var maxCount = 100;
+	var cursor = (req.query.cursor) ? req.query.cursor : 0;
+	var count = (req.query.count) ? req.query.count : maxCount;
+	var aux = (cursor - count);
+	var before = (aux < 0) ? 0 : aux;
+	var after = parseInt(cursor)+parseInt(count);
 
+	var tstamp_sort = req.query.sort;
+	var accuracy = req.query.accuracy;
+
+	var beginInterval = req.query.begin;
+        var endInterval = req.query.end;
+
+	if ((beginInterval != null) && (endInterval!=null)){
+                if (accuracy!= null){
+                        accuracy = Math.trunc(120 / accuracy);
+                        query = {name:id_tess, tstamp: {$gt : beginInterval, $lt: endInterval}, $where:"this.seq % "+accuracy+" == 0"};
+                }else {
+                        query = {name:id_tess, tstamp: {$gt : beginInterval, $lt: endInterval}};
+                }
+        } else if ((beginInterval != null) && (endInterval == null)){
+                query = {name:id_tess, tstamp : {$gt: beginInterval}};
+        } else {
+                query = {name:id_tess};
+        }
+
+	console.log("Query observation: %j", query);
+
+	if (req.params.id_obs=="latest_values"){
+		console.log("Send query "+new Date().getTime());
+		Last.find(query, fields, {skip: cursor, limit:count, sort:{tstamp:1}} , function (errs, docs){
+			if (errs){
+                        	res.json(500);
+                	} else {
+				console.log("Last values "+new Date().getTime());
+				res.json(docs);
+			}	
+		});
+	} else {
+		Observations.findOne({ _id: req.params.id_obs}, fields,  function (errs, doc){
+			res.json(doc);
+		});
+	}
+	
 });
 
-router.get('/api/v1/photometers/:id_tess/observations', function(req, res){
+router.get('/photometers/:id_tess/observations', function(req, res){
 
 	var id_tess = req.params.id_tess;
 
@@ -108,31 +177,35 @@ router.get('/api/v1/photometers/:id_tess/observations', function(req, res){
 	var aux = (cursor-count);
 	var before = ( aux < 0) ? 0 : aux;
 	var after =parseInt(cursor)+parseInt(count);
-	var link = "http://api.stars4all.eu/api/v1/photometers/"+id_tess+"/observations/";
+	var link = "http://api.stars4all.eu/photometers/"+id_tess+"/observations/";
 
 
-/*	var time = req.query.tstamp;
-	var q2;
-	if (time!=null){
-		query["tstamp"]=/time/;
-		q2 = {name:id_tess, tstamp:/time/};
-	}else{
-		q2 = {name:id_tess};
-	}
-	console.log(query+" "+time);
-*/	
 	var beginInterval = req.query.begin;
 	var endInterval = req.query.end;
 
+	var tstamp_sort = req.query.sort;
+	var accuracy = req.query.accuracy;
+
+	if (tstamp_sort == null){
+		tstamp_sort = 1;
+	}
+
 	if ((beginInterval != null) && (endInterval!=null)){
-		query = {name:id_tess, tstamp: {$gt : beginInterval, $lt: endInterval}};		
+		if (accuracy!= null){
+			accuracy = Math.trunc(120 / accuracy);
+			query = {name:id_tess, tstamp: {$gt : beginInterval, $lt: endInterval}, $where:"this.seq % "+accuracy+" == 0"};		
+		}else {
+			query = {name:id_tess, tstamp: {$gt : beginInterval, $lt: endInterval}};
+		}
 	} else if ((beginInterval != null) && (endInterval == null)){
 		query = {name:id_tess, tstamp : {$gt: beginInterval}};
 	} else {
 		query = {name:id_tess};
 	}
-	console.log("Query: %j", query);
-	Observations.find(query, fields ,{skip: cursor, limit:count} , function (errs, docs){
+
+
+	console.log("Query observations: %j", query);
+	Observations.find(query, fields ,{skip: cursor, limit:count, sort:{tstamp:-1}} , function (errs, docs){
 	
 		if (errs){
 			res.json(500);
@@ -165,7 +238,7 @@ router.get('/api/v1/photometers/:id_tess/observations', function(req, res){
 
 });
 
-router.post('/api/v1/reports/new', function(req, res){
+router.post('/reports/new', function(req, res){
 	var photometers = req.body.photometers;
 	var sensors = req.body.sensors
 
@@ -199,7 +272,7 @@ router.post('/api/v1/reports/new', function(req, res){
 
 });
 
-router.get('/api/v1/reports', function(req, res){
+router.get('/reports', function(req, res){
 	Report.find({}, function (errs,docs){
 		if (errs){
 			res.json(500);
@@ -209,47 +282,28 @@ router.get('/api/v1/reports', function(req, res){
 	});
 });
 
-router.get('/api/v1/reports/:id', function(req, res){
+router.get('/reports/instant_values', function(req, res){
 
 	var maxCount = 100;
-	//var limit = req.query.limit;
-	//var previous_count = req.query.previuos_count;
-	var cursor = (req.query.cursor) ? req.query.cursor : 0; 
 	var count = (req.query.count) ? req.query.count : maxCount;
-	var aux = (cursor-count);
-	var before = ( aux < 0) ? 0 : aux;
-	var after =parseInt(cursor)+parseInt(count);
-	var link = req.protocol+"://"+req.hostname+":"+PORT+"/api/reports/"+req.params.id;
 
-	//Looking for a report
-	Report.findOne({_id:req.params.id}, function (errs, docs){
-		if (errs){
+
+	var fields = req.query.fields;
+        if (fields!=null){
+                fields = fields.replace(/,/g," ");
+                fields = fields + ' _id';
+        } else {
+                fields = 'name mag tstamp';
+        }
+
+	Last.find({}, fields, {limit:count, sort:{tstamp:-1}}, function (obs_error, obs_docs){
+		if (obs_error){
 			res.json(500);
 		} else {
-			console.log('Photometers list:'+docs);
-
-			var fields = "' "+docs.sensors+" '";
-			fields = fields.replace(",", " ");
-
-			//Check count
-
-			Observations.find(docs.photometers, fields, {skip: cursor, limit:count}, function (obs_errs, obs_docs){
-				if (obs_errs){
-					res.json(500);
-				} else {
-					var link_previous = link+"?cursor="+before+"&count="+count;
-					var link_next = link+"?cursor="+after+"&count="+count;
-					//var result = "{ data: "+JSON.stringify(obs_docs,null,' ')+"}"
-					//var result2 = { data: obs_docs, paging: { cursors : { after : after, before : before}, previous: link_previous, next:link_next}}
-					res.links({
-						prev: link_previous,
-						next: link_next
-					});
-					res.json(obs_docs);
-				}
-			});
+			res.json(obs_docs);	
 		}
 	});
+
 });
 
 app.use(router)
