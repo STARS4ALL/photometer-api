@@ -12,6 +12,8 @@ var ObservationSchema = new Schema({
 });
 
 var Observations = mongoose.model('Observation',ObservationSchema,'observations');
+var last_observations = mongoose.model('last_observation', ObservationSchema,'last_observations');
 
 module.exports.Observations = Observations;
+module.exports.last_observations = last_observations;
 module.exports.Schema = ObservationSchema;
