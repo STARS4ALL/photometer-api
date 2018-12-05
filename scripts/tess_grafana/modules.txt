@@ -1,0 +1,5 @@
+pip install deepdiff --user
+pip install geopy --user
+pip install deepdiff --user
+pip install attrdict --user
+
