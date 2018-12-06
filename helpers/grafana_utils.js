@@ -1,3 +1,4 @@
+"use strict";
 module.exports = {
   parseAuth: function(token) {
     const strauth = new Buffer(token, 'base64').toString();

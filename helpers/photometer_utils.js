@@ -1,6 +1,7 @@
+"use strict";
 module.exports = {
   parseMAC: function(tess_mac) {
-    if (!tess_mac)return tess_mac;
+    if (!tess_mac) return tess_mac;
     
     var mac = tess_mac.replace(/[^a-zA-Z0-9]/g, '');
     if (mac.length !== 12) {
@@ -26,6 +27,4 @@ module.exports = {
     console.log(removeEmpty(tess))
     return removeEmpty(tess);
   }
-
-
 }

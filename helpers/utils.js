@@ -1,3 +1,4 @@
+"use strict";
 module.exports = {
   exec: function(command, options, callback) {
     const {
