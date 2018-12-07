@@ -366,10 +366,15 @@ router.post('/photometers_new', function(req, res) {
         error: result["error"]
       });
     } else if ("success" in result) {
+      var d = new Date();
+      d.setDate(d.getDate() - 1);
       Tess.distinct('name', {}, function(errs, distinct) {
         Last.distinct('name', {
           'name': {
             '$nin': distinct
+          },
+          'tstamp': {
+            '$gt': d.toISOString()
           }
         }, function(errs, docs) {
           res.json(docs);
@@ -383,7 +388,6 @@ router.post('/photometers_new', function(req, res) {
     }
   });
 });
-
 
 router.post('/grafana/sync', function(req, res) {
   var grafanaUtils = require('./helpers/grafana_utils');
@@ -434,6 +438,29 @@ router.get('/photometers_fix', function(req, res) {
     res.send('ok');
   });
 });
+
+router.get('/photometers_emitting', function(req, res) {
+
+  var moment = require('moment');
+  var re = new RegExp('[0-9]+(y|M|w|d|h|ms|m|s)');
+
+  var query_moment = moment().subtract(24,'h');
+
+  if (req.query.subtract && re.exec(req.query.subtract)){
+    var n = parseInt(re.exec(req.query.subtract)[0]);
+    var unit = re.exec(req.query.subtract)[1];
+    query_moment = moment().subtract(n,unit);
+  }
+
+  Last.distinct('name', {
+    'tstamp': {
+      '$gt': query_moment.toDate().toISOString()
+    }
+  }, function(errs, docs) {
+    res.json(docs);
+  });
+});
+
 
 router.get('/robots.txt', function(req, res) {
   res.type('text/plain');
@@ -766,7 +793,7 @@ router.get('/reports', function(req, res) {
 router.get('/reports/instant_values', function(req, res) {
 
   var maxCount = 100;
-  var count = (req.query.count) ? req.query.count : maxCount;
+  var count = (req.query.count) ? parseInt(req.query.count) : maxCount;
 
 
   var fields = req.query.fields;
