@@ -444,12 +444,12 @@ router.get('/photometers_emitting', function(req, res) {
   var moment = require('moment');
   var re = new RegExp('[0-9]+(y|M|w|d|h|ms|m|s)');
 
-  var query_moment = moment().subtract(24,'h');
+  var query_moment = moment().subtract(24, 'h');
 
-  if (req.query.subtract && re.exec(req.query.subtract)){
+  if (req.query.subtract && re.exec(req.query.subtract)) {
     var n = parseInt(re.exec(req.query.subtract)[0]);
     var unit = re.exec(req.query.subtract)[1];
-    query_moment = moment().subtract(n,unit);
+    query_moment = moment().subtract(n, unit);
   }
 
   Last.distinct('name', {
@@ -473,7 +473,10 @@ router.get('/cardView/:name', function(req, res) {
   }, function(errs, doc) {
     var meta = '';
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    // console.log(ip)
     var rederic_url = GRAFANA_PROTOCOL + '://' + GRAFANA_HOST;
+
+    meta += '<meta property="og:url" content="http://api.stars4all.eu/cardView/' + doc.name + '">'
 
     meta += '<meta property="og:url" content="' + GRAFANA_PROTOCOL + '://' + GRAFANA_HOST + '">'
     meta += '<meta name="twitter:url" content="' + GRAFANA_PROTOCOL + '://' + GRAFANA_HOST + '">'
@@ -504,8 +507,12 @@ router.get('/cardView/:name', function(req, res) {
       meta += '<meta property="og:title" content="STARS4ALL - TESS-W ' + doc.name + '">'
       meta += '<meta name="twitter:title" content="STARS4ALL - TESS-W ' + doc.name + '">'
 
-      meta += '<meta property="og:image" content="' + GRAFANA_PROTOCOL + '://' + GRAFANA_HOST + '/render/d-solo/datasheet_' + doc.name + '/' + doc.name + '?orgId=1&panelId=13&from=now&to=now-24h&width=1000&height=500">'
-      meta += '<meta name="twitter:image" content="' + GRAFANA_PROTOCOL + '://' + GRAFANA_HOST + '/render/d-solo/datasheet_' + doc.name + '/' + doc.name + '?orgId=1&panelId=13&from=now&to=now-24h&width=1000&height=500">'
+      var d = new Date();
+      var n = d.getMilliseconds();
+
+      meta += '<meta property="og:image" content="' + GRAFANA_PROTOCOL + '://' + GRAFANA_HOST + '/render/d-solo/datasheet_' + doc.name + '/' + doc.name + '?orgId=1&panelId=13&from=now&to=now-24h&width=1000&height=500&' + n + '">'
+      meta += '<meta name="twitter:image" content="' + GRAFANA_PROTOCOL + '://' + GRAFANA_HOST + '/render/d-solo/datasheet_' + doc.name + '/' + doc.name + '?orgId=1&panelId=13&from=now&to=now-24h&width=1000&height=500&' + n + '">'
+      meta += '<meta name="og:image:alt" content="Last measures">'
 
       meta += '<meta name="og:site_name" content="' + doc.name + '">'
 
@@ -520,12 +527,19 @@ router.get('/cardView/:name', function(req, res) {
         return;
       }
 
-      console.log(data)
-
       if (data.indexOf('Twitter') !== -1) {
+        // console.log("From Twitter")
+        // console.log(html)
         res.send(html);
         return;
       }
+      if (data.indexOf('Facebook') !== -1) {
+        // console.log("From Facebook")
+        // console.log(html)
+        res.send(html);
+        return;
+      }
+      // console.log(data)
 
       res.redirect(rederic_url);
     })
