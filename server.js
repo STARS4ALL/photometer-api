@@ -563,8 +563,8 @@ router.get('/photometers/:id_tess/observations/:id_obs', function(req, res) {
   }
 
   var maxCount = 100;
-  var cursor = (req.query.cursor) ? req.query.cursor : 0;
-  var count = (req.query.count) ? req.query.count : maxCount;
+  var cursor = (req.query.cursor) ? parseInt(req.query.cursor) : 0;
+  var count = (req.query.count) ? parseInt(req.query.count) : maxCount;
   var aux = (cursor - count);
   var before = (aux < 0) ? 0 : aux;
   var after = parseInt(cursor) + parseInt(count);
@@ -654,8 +654,8 @@ router.get('/photometers/:id_tess/observations', function(req, res) {
   }
   //Pagination variables
   var maxCount = 100;
-  var cursor = (req.query.cursor) ? req.query.cursor : 0;
-  var count = (req.query.count) ? req.query.count : maxCount;
+  var cursor = (req.query.cursor) ? parseInt(req.query.cursor) : 0;
+  var count = (req.query.count) ? parseInt(req.query.count) : maxCount;
   var aux = (cursor - count);
   var before = (aux < 0) ? 0 : aux;
   var after = parseInt(cursor) + parseInt(count);
