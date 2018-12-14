@@ -335,28 +335,29 @@ router.post('/photometers_list', function(req, res) {
   });
 });
 
-// router.post('/photometers', function(req, res) {
-//   var grafanaUtils = require('./helpers/grafana_utils');
-//   grafanaUtils.isAdminRolAsync(req.body.token, function(result) {
-//     if ("error" in result) {
-//       res.status(401);
-//       res.send({
-//         error: result["error"]
-//       });
-//     } else if ("success" in result) {
-//       Tess.find({}, {
-//         '_id': 0
-//       }, function(errs, docs) {
-//         res.json(docs);
-//       });
-//     } else {
-//       res.status(401);
-//       res.send({
-//         error: "Error"
-//       });
-//     }
-//   });
-// });
+router.post('/photometers_all', function(req, res) {
+  var grafanaUtils = require('./helpers/grafana_utils');
+  grafanaUtils.isAdminRolAsync(req.body.token, function(result) {
+    if ("error" in result) {
+      res.status(401);
+      res.send({
+        error: result["error"]
+      });
+    } else if ("success" in result) {
+      Tess.find({}, {
+        '_id': 0
+      }, function(errs, docs) {
+        res.json(docs);
+      });
+    } else {
+      res.status(401);
+      res.send({
+        error: "Error"
+      });
+    }
+  });
+});
+
 router.post('/photometers_new', function(req, res) {
   var grafanaUtils = require('./helpers/grafana_utils');
   grafanaUtils.isAdminRolAsync(req.body.token, function(result) {
