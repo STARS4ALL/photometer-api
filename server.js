@@ -400,9 +400,9 @@ router.post('/grafana/sync', function(req, res) {
         error: result["error"]
       });
     } else if ("success" in result) {
-
+      res.end("ok");
       require('./helpers/utils').exec(PYTHON, [GRAFANA_PYTHON_SCRIPT, 'sync'], function(data) {
-        res.end(data);
+        //res.end(data);
       });
 
     } else {

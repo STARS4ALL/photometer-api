@@ -21,14 +21,22 @@ def update_tess(tess):
     try:
         tess_object = Tess(tess, config.PHOTOMETERS_API_URL).generate_tokens(
             config.SERVER_PROTOCOL + "://" + config.SERVER_HOST, config.PRODUCTION_ORG_ID)
-        tess_grafana.generate_datasheet(tess_object)
-        tess_grafana.add_or_update_tess_in_country_list(tess_object)
-        tess_grafana.add_or_update_tess_in_lastet_measures(tess_object)
-        tess_grafana.add_or_update_tess_in_comparison(tess_object)
-        tess_grafana.add_or_update_tess_in_heatmap(tess_object)
-        tess_grafana.add_or_update_tess_in_statistics(tess_object)
-        tess_grafana.add_or_update_tess_in_raw(tess_object)
+        result = tess_grafana.generate_datasheet(tess_object)
+        # print(result)
+        result = tess_grafana.add_or_update_tess_in_country_list(tess_object)
+        # print(result)
+        result = tess_grafana.add_or_update_tess_in_lastet_measures(tess_object)
+        # print(result)
+        result = tess_grafana.add_or_update_tess_in_comparison(tess_object)
+        # print(result)
+        result = tess_grafana.add_or_update_tess_in_heatmap(tess_object)
+        # print(result)
+        result = tess_grafana.add_or_update_tess_in_statistics(tess_object)
+        # print(result)
+        result = tess_grafana.add_or_update_tess_in_raw(tess_object)
+        # print(result)
     except Exception as e:
+        print(e.message)
         pass
 
 

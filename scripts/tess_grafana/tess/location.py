@@ -1,4 +1,5 @@
 import requests
+import copy
 # from geopy.geocoders import Nominatim, ArcGIS, Photon
 
 
@@ -7,13 +8,14 @@ class Location:
         self.location = location
 
         try:
+            old_location = copy.deepcopy(self.location)
             if not self.__isComplete():
                 self.__nominatim()
 
             if not self.__isComplete():
                 self.__photon()
 
-            if name and mac and api_url:
+            if old_location != self.location and name and mac and api_url:
                 r = requests.post("%s/photometers/%s/%s" % (api_url, name, mac),
                                   json={'tess': {'info_location': self.location}, 'noexec': True})
         except:

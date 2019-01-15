@@ -5,6 +5,7 @@ module.exports = {
       spawn
     } = require('child_process');
 
+    // console.log(command+" "+options);
     const pyProg = spawn(command, options);
     pyProg.stdout.on('data', callback);
     pyProg.stderr.on('data', callback);

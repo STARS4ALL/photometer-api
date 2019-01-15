@@ -1,6 +1,6 @@
 # coding: utf-8
 from .location import Location
-
+import re
 
 class Tess:
     # tess = {
@@ -242,12 +242,20 @@ class Tess:
     def __generate_tess_tokens(self):
         tokens = {
             "[token_tess_total_day_meditions]": 24 * 60,
+            "[token_tess_period_seconds]": 60,
             "[token_tess_repository_url]": "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/VeU1YVuzK16hpls?path=" + (self.tess["name"])
         }
 
         if "info_tess" in self.tess:
             if "period" in self.tess["info_tess"]:
                 tokens["[token_tess_total_day_meditions]"] = 24 * 60 * (60 / self.tess["info_tess"]["period"])
+                tokens["[token_tess_period_seconds]"] = self.tess["info_tess"]["period"]
+
+        if "info_location" in self.tess:
+            if "place" in self.tess["info_location"] and "country" in self.tess["info_location"]:
+                tokens["[token_tess_sunmoon_datasource]"] = self.tess["name"] + \
+                    " (" + self.tess["info_location"]["country"] + ") " + self.tess["info_location"]["place"]
+                tokens["[token_tess_sunmoon_datasource_escape]"] = re.escape(tokens["[token_tess_sunmoon_datasource]"])
 
         return tokens
 

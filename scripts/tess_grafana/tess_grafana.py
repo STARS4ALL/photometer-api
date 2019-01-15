@@ -5,7 +5,8 @@ from deepdiff import DeepDiff
 import re
 from copy import deepcopy
 import json
-
+import random
+import copy
 
 class TessGrafana(object):
     def __init__(self, user, paswd, org_template, org_production, protocol, host):
@@ -152,7 +153,7 @@ class TessGrafana(object):
 
     def add_or_update_tess_in_country_list(self, tess_object):
         DASH_TEMPLATE_UID = "template_tess_by_regions"  # uid dash template
-        DASH_FINAL_UID = "tess_country_" + tess_object["[token_tess_location_country]"].replace(" ","_")
+        DASH_FINAL_UID = "tess_country_" + tess_object["[token_tess_location_country]"].replace(" ", "_")
 
         # Load template
         dash_info_template = self.__find_template(DASH_TEMPLATE_UID)
@@ -170,6 +171,9 @@ class TessGrafana(object):
 
         # Search dashboards with this tittle
         results = self.__find_dash_by_title(dash_info_template["dashboard"]["title"])
+
+        # Generate Sun And Moon datasources
+        self.generate_sunmoon_datasource(tess_object)
 
         response = None
 
@@ -257,6 +261,10 @@ class TessGrafana(object):
             except:
                 pass
 
+            # Copy annotations and variables
+            dash_info["dashboard"]["templating"] = dash_info_template["dashboard"]["templating"]
+            dash_info["dashboard"]["annotations"] = dash_info_template["dashboard"]["annotations"]
+
             # Fix gridPos
             dash_info["dashboard"]["panels"] = self.__fix_gridPos(dash_info["dashboard"]["panels"])
 
@@ -264,7 +272,7 @@ class TessGrafana(object):
             dash_info["dashboard"]["uid"] = DASH_FINAL_UID
 
             # Save
-            response = self.__update_dash(dash_info, message=message+" "+str(panels_ids))
+            response = self.__update_dash(dash_info, message=message + " " + str(panels_ids))
 
         else:
             # Create
@@ -443,9 +451,16 @@ class TessGrafana(object):
 
         options_sort = sorted(old_options, key=lambda k: k['tess_id_number'])
 
+
         for list_template in dash_info["dashboard"]["templating"]["list"]:
             list_template["query"] = old_query
-            list_template["options"] = options_sort
+            list_template["options"] = copy.deepcopy(options_sort)
+
+        # Random option selected
+        for list_template in dash_info["dashboard"]["templating"]["list"]:
+            selected_pos = random.randint(0, len(list_template["options"]) - 1)
+            list_template["current"] = list_template["options"][selected_pos]
+            list_template["options"][selected_pos]["selected"] = True
 
         dash_info["overwrite"] = True
 
@@ -484,6 +499,38 @@ class TessGrafana(object):
 
         else:
             return addressToVerify
+
+    def generate_sunmoon_datasource(self, tess_object):
+        if tess_object["[token_tess_sunmoon_datasource]"]:
+            self.grafana_api.switch_actual_user_organisation(self.grafana_final_org_id)
+            datasource_sunmoon = self.grafana_api.get_datasource_by_name(tess_object["[token_tess_sunmoon_datasource]"])
+
+            datasource_sunmoon_object = {
+                "orgId": 1,
+                "name": tess_object["[token_tess_sunmoon_datasource]"],
+                "type": "fetzerch-sunandmoon-datasource",
+                "access": "proxy",
+                "basicAuth": False,
+                "withCredentials": False,
+                "isDefault": False,
+                "jsonData": {
+                    "keepCookies": [],
+                    "position": {
+                        "latitude": tess_object["[token_tess_location_lat]"],
+                        "longitude": tess_object["[token_tess_location_lon]"]
+                    }
+                },
+                "readOnly": False}
+
+            if datasource_sunmoon and "id" in datasource_sunmoon:
+                # update
+                datasource_sunmoon_object["id"] = datasource_sunmoon["id"]
+                self.grafana_api.switch_actual_user_organisation(self.grafana_final_org_id)
+                datasource_sunmoon = self.grafana_api.update_datasource(datasource_sunmoon["id"], datasource_sunmoon_object)
+            else:
+                # create
+                self.grafana_api.switch_actual_user_organisation(self.grafana_final_org_id)
+                datasource_sunmoon = self.grafana_api.create_datasource(datasource_sunmoon_object)
 
     def add_or_update_tess_in_comparison(self, tess_object):
         DASH_TEMPLATE_UID = "template_tess_comparison"  # uid dash template
@@ -541,7 +588,10 @@ class TessGrafana(object):
         dash_info_template = self.__find_template(DASH_TEMPLATE_UID)
 
         if not "dashboard" in dash_info_template:
-            return ({"status": "error", "error": "No exist template " + template_uid + " in organisation " + str(self.grafana_template_org_id)})
+            return ({"status": "error", "error": "No exist template " + DASH_TEMPLATE_UID + " in organisation " + str(self.grafana_template_org_id)})
+
+        # self.grafana_api.switch_actual_user_organisation(self.grafana_final_org_id)
+        # print(self.grafana_api.create_folder("Datasheet",'datasheet'))
 
         # Updete Folder ID
         dash_info_template["folderId"] = self.__create_folder(
@@ -551,6 +601,9 @@ class TessGrafana(object):
         dash_info_template = self.__replace_template_tokens(dash_info_template, tess_object)
         if "status" in dash_info_template and dash_info_template["status"] == "error":
             return dash_info_template
+
+        # Generate Sun And Moon datasources
+        self.generate_sunmoon_datasource(tess_object)
 
         alert_notification = self.__search_alert_notification(tess_object["[token_tess_id]"])
         # Configure Email notification alert!
@@ -612,7 +665,7 @@ class TessGrafana(object):
         dash_info_template = self.__find_template(DASH_TEMPLATE_UID)
 
         if not "dashboard" in dash_info_template:
-            return ({"status": "error", "error": "No exist template " + template_uid + " in organisation " + str(self.grafana_template_org_id)})
+            return ({"status": "error", "error": "No exist template " + DASH_TEMPLATE_UID + " in organisation " + str(self.grafana_template_org_id)})
 
         # Updete Folder ID
         dash_info_template["folderId"] = self.__create_folder(
