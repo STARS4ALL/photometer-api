@@ -7,6 +7,7 @@ RUN apt-get update
 # install python
 RUN apt-get install -y software-properties-common
 RUN python --version
+RUN apt-get install python-dev
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 RUN python get-pip.py
 RUN pip install -U pip
