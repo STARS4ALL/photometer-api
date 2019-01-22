@@ -18,6 +18,7 @@ RUN pip install geopy --user
 RUN pip install deepdiff --user
 RUN pip install attrdict --user
 RUN pip install requests --user
+RUN pip install psutil --user
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
