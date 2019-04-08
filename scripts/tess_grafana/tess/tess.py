@@ -210,7 +210,7 @@ class Tess:
                 tokens["[token_tess_org_logo_url]"] = self.tess["info_org"]["logo_url"]
 
             if "description" in self.tess["info_org"]:
-                tokens["[token_tess_org_description]"] = self.tess["info_org"]["description"].replace('\n', '<br>').replace('\r', '')
+                tokens["[token_tess_org_description]"] = self.tess["info_org"]["description"].replace('\n', '<br>').replace('\r', '').replace('"','\'')
 
             if "web_url" in self.tess["info_org"]:
                 tokens["[token_tess_org_web_url]"] = self.tess["info_org"]["web_url"]
