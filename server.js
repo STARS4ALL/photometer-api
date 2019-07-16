@@ -477,7 +477,7 @@ router.get('/cardView/:name', function(req, res) {
     // console.log(ip)
     var rederic_url = GRAFANA_PROTOCOL + '://' + GRAFANA_HOST;
 
-    meta += '<meta property="og:url" content="http://api.stars4all.eu/cardView/' + doc.name + '">'
+    meta += '<meta property="og:url" content="https://api.stars4all.eu/cardView/' + req.params.name + '">'
 
     meta += '<meta property="og:url" content="' + GRAFANA_PROTOCOL + '://' + GRAFANA_HOST + '">'
     meta += '<meta name="twitter:url" content="' + GRAFANA_PROTOCOL + '://' + GRAFANA_HOST + '">'
@@ -550,7 +550,7 @@ router.get('/cardView/:name', function(req, res) {
 });
 //******************************************************************************
 
-router.get('/photometers/:id_tess/observations/:id_obs', function(req, res) {
+router.get('/photometer/:id_tess/observations/:id_obs', function(req, res) {
   var id_tess = req.params.id_tess;
 
   var query;
@@ -637,8 +637,7 @@ router.get('/photometers/:id_tess/observations/:id_obs', function(req, res) {
 
 });
 
-router.get('/photometers/:id_tess/observations', function(req, res) {
-
+router.get('/photometer/:id_tess/observations', function(req, res) {
   var id_tess = req.params.id_tess;
 
   //	var link = req.protocol+"://"+req.hostname+":"+PORT+"/api/v1/photometers/"+id_tess+"/observations/";
@@ -660,7 +659,7 @@ router.get('/photometers/:id_tess/observations', function(req, res) {
   var aux = (cursor - count);
   var before = (aux < 0) ? 0 : aux;
   var after = parseInt(cursor) + parseInt(count);
-  var link = "http://api.stars4all.eu/photometers/" + id_tess + "/observations/";
+  var link = "https://api.stars4all.eu/photometer/" + id_tess + "/observations";
 
 
   var beginInterval = req.query.begin;
@@ -706,8 +705,8 @@ router.get('/photometers/:id_tess/observations', function(req, res) {
     };
   }
 
-
   console.log("Query observations: %j", query);
+
   Observations.find(query, fields, {
     skip: cursor,
     limit: count,
@@ -715,12 +714,9 @@ router.get('/photometers/:id_tess/observations', function(req, res) {
       tstamp: -1
     }
   }, function(errs, docs) {
-
     if (errs) {
       res.json(500);
     } else {
-
-
 
       Observations.count({
         name: id_tess
@@ -734,7 +730,7 @@ router.get('/photometers/:id_tess/observations', function(req, res) {
 
         for (var i in docs) {
           data_result[i]["links"] = {
-            self: link + data_result[i]["_id"]
+            self: link + "/" + data_result[i]["_id"]
           };
           delete data_result[i]["_id"];
         }
