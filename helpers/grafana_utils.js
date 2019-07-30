@@ -14,7 +14,7 @@ module.exports = {
   isAdminRolAsync: function(token, callback) {
     var config = require('../config.js');
     var auth = this.parseAuth(token);
-    var url = `http://${encodeURI(auth[0])}:${encodeURI(auth[1])}@${GRAFANA_HOST}/api/user/orgs`;
+    var url = `https://${encodeURI(auth[0])}:${encodeURI(auth[1])}@${GRAFANA_HOST}/api/user/orgs`;
     var request = require('request');
     request.get({
       url: url
