@@ -707,7 +707,7 @@ router.get('/photometer/:id_tess/observations', function(req, res) {
 
   console.log("Query observations: %j", query);
 
-  Observations.find(query, fields, {
+  Last.find(query, fields, {
     skip: cursor,
     limit: count,
     sort: {
