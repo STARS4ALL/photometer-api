@@ -2,6 +2,7 @@
 from .location import Location
 import re
 
+
 class Tess:
     # tess = {
     #     "name": "stars201",
@@ -210,7 +211,8 @@ class Tess:
                 tokens["[token_tess_org_logo_url]"] = self.tess["info_org"]["logo_url"]
 
             if "description" in self.tess["info_org"]:
-                tokens["[token_tess_org_description]"] = self.tess["info_org"]["description"].replace('\n', '<br>').replace('\r', '').replace('"','\'')
+                tokens["[token_tess_org_description]"] = self.tess["info_org"]["description"].replace(
+                    '\n', '<br>').replace('\r', '').replace('"', '\'')
 
             if "web_url" in self.tess["info_org"]:
                 tokens["[token_tess_org_web_url]"] = self.tess["info_org"]["web_url"]
@@ -236,6 +238,10 @@ class Tess:
 
             if "mail" in self.tess["info_contact"]:
                 tokens["[token_tess_contact_mail]"] = self.tess["info_contact"]["mail"]
+                try:
+                    tokens["[token_tess_contact_mail]"] = tokens["[token_tess_contact_mail]"].replace(",", ";")
+                except Exception as e:
+                    pass
 
         return tokens
 
