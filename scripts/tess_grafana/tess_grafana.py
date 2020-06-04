@@ -27,7 +27,7 @@ class TessGrafana(object):
         for key in tess_object.keys():
 
             # try:
-            if isinstance(tess_object[key], basestring):
+            if isinstance(tess_object[key], str):
                 if isinstance(tess_object[key], unicode):
                     # print(tess_object[key])
                     template_string = template_string.replace(key, tess_object[key])
@@ -486,7 +486,7 @@ class TessGrafana(object):
 
             emails = []
 
-            for email in addressToVerify.split(";"):
+            for email in addressToVerify.split(","):
                 match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email)
 
                 if match == None:
