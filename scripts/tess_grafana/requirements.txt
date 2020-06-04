@@ -7,7 +7,7 @@ attrdict == 2.0.1
 deepdiff == 4.3.2
 
 # tess_grafana/sync.py: 10
-psutil == 5.5.1
+psutil == 5.6.6
 
 # tess_grafana/grafana/grafana_request.py: 1
 # tess_grafana/sync.py: 7
