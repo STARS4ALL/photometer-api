@@ -7,7 +7,7 @@
 		"child_process": "^1.0.2",
 		"express": "^4.16.2",
 		"moment": "^2.22.2",
-		"mongodb": "^2.2.33",
+		"mongodb": "^3.1.13",
 		"mongoose": "^4.12.3",
 		"request": "^2.87.0",
 		"whois": "^2.7.0"
