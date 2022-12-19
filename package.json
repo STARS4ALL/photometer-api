@@ -10,7 +10,7 @@
 		"mongodb": "^2.2.33",
 		"mongoose": "^4.12.3",
 		"request": "^2.87.0",
-		"whois": "^2.7.0"
+		"whois": "^2.13.6"
 	},
 	"scripts": {
 		"prestart": "npm install",
